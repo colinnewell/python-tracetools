@@ -66,7 +66,7 @@ if __name__ == '__main__':
             cmd = c
             break
     if cmd:
-        process_args = " -p ".join([p.pid for p in pids])
+        process_args = " -p ".join([str(p.pid) for p in pids])
         command = "%s -p %s %s" % (cmd, process_args,
                                    ' '.join(args.get('<%s_args>' % cmd, [])))
         if args.get('--show-cmd'):
