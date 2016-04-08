@@ -1,4 +1,2 @@
-argparse==1.2.1
-docopt==0.6.2
-psutil==4.1.0
-wsgiref==0.1.2
+docopt
+psutil
