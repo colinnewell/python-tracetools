@@ -5,7 +5,7 @@ Finds the children of a process and runs a command with the child pid's.
 Usage:
     p strace [options] [--] [<strace_args>...]
     p lsof [options] [--] [<lsof_args>...]
-    p filehandles [options] [--] [<lsof_args>...]
+    p pids [options]
     p --help
 
     --cmd-like=starman       Find the parent process with the command like
@@ -24,6 +24,10 @@ from os import system
 def error(msg):
     print msg
     exit(1)
+
+
+def basic_process_info(p):
+    return "%s %s [%s]" % (p.pid, p.name(), p.exe())
 
 
 if __name__ == '__main__':
@@ -46,26 +50,31 @@ if __name__ == '__main__':
             error("No match found")
         elif len(matches) > 1:
             error("Too many process were a potential match, %s"
-                  % ', '.join(["%s %s [%s]"
-                              % (p.pid, p.name(), p.exe()) for p in matches]))
+                  % ', '.join([basic_process_info(p) for p in matches]))
         proc = matches[0]
 
-    pids = [str(p.pid) for p in proc.children(recursive=True)]
+    pids = [p for p in proc.children(recursive=True)]
     if args.get('--include-start-process'):
-        pids.append(str(proc.pid))
+        pids.append(proc)
 
     if len(pids) == 0:
         error("Failed to find process")
 
+    cmd = None
     for c in ('strace', 'lsof'):
         if args.get(c):
             cmd = c
             break
-    if not cmd:
-        error("No command specified")
-    process_args = " -p ".join(pids)
-    command = "%s -p %s %s" % (cmd, process_args,
-                               ' '.join(args.get('<%s_args>' % cmd, [])))
-    if args.get('--show-cmd'):
-        print command
-    system(command)
+    if cmd:
+        process_args = " -p ".join([p.pid for p in pids])
+        command = "%s -p %s %s" % (cmd, process_args,
+                                   ' '.join(args.get('<%s_args>' % cmd, [])))
+        if args.get('--show-cmd'):
+            print command
+        system(command)
+    else:
+        elif args.get('pids'):
+            for p in pids:
+                print basic_process_info(p)
+        else:
+            error("No command specified")
