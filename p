@@ -73,7 +73,7 @@ if __name__ == '__main__':
             print command
         system(command)
     else:
-        elif args.get('pids'):
+        if args.get('pids'):
             for p in pids:
                 print basic_process_info(p)
         else:
