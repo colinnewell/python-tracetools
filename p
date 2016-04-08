@@ -5,9 +5,11 @@ Finds the children of a process and runs a command with the child pid's.
 Usage:
     p strace [options] [--] [<strace_args>...]
     p lsof [options] [--] [<lsof_args>...]
+    p filehandles [options] [--] [<lsof_args>...]
     p --help
 
-    --cmd-like=starman       Find the parent process with the command like this.
+    --cmd-like=starman       Find the parent process with the command like
+                             this.
     --children-of-pid=<pid>  Start with this parent process
     --include-start-process  Also make use of the parent process found.
     --show-cmd               Show the command being run.
@@ -18,9 +20,11 @@ from docopt import docopt
 from sys import exit
 from os import system
 
+
 def error(msg):
     print msg
     exit(1)
+
 
 if __name__ == '__main__':
 
@@ -36,11 +40,14 @@ if __name__ == '__main__':
             error("Must specify --children-of-pid or --cmd-like")
         one = psutil.Process(1)
         all_children = one.children(recursive=True)
-        matches = [ c for c in all_children if like in c.exe() or like in c.name()]
+        matches = [c for c in all_children
+                   if like in c.exe() or like in c.name()]
         if len(matches) == 0:
             error("No match found")
         elif len(matches) > 1:
-            error("Too many process were a potential match, %s" % ', '.join([ "%s %s [%s]" % (p.pid, p.name(), p.exe()) for p in matches]))
+            error("Too many process were a potential match, %s"
+                  % ', '.join(["%s %s [%s]"
+                              % (p.pid, p.name(), p.exe()) for p in matches]))
         proc = matches[0]
 
     pids = [str(p.pid) for p in proc.children(recursive=True)]
@@ -57,7 +64,8 @@ if __name__ == '__main__':
     if not cmd:
         error("No command specified")
     process_args = " -p ".join(pids)
-    command = "%s -p %s %s" % (cmd, process_args, ' '.join(args.get('<%s_args>' % cmd, [])))
+    command = "%s -p %s %s" % (cmd, process_args,
+                               ' '.join(args.get('<%s_args>' % cmd, [])))
     if args.get('--show-cmd'):
-        print command 
+        print command
     system(command)
